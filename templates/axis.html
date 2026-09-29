@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}轴区 - {{ period_name }}{% endblock %}
+{% block content %}
+
+<h2 class="section-title">轴区 · {{ period }}</h2>
+
+<div class="card upload-card">
+    <div class="collapse-head" id="uploadHead" onclick="toggleUpload()">
+        <span class="ch-icon">📤</span>
+        <span>上传轴</span>
+        <span class="plus">＋</span>
+    </div>
+    <form id="uploadForm" class="upload-form" style="display:none;">
+        <div class="form-row">
+            <label>BOSS</label>
+            <select name="boss" required>
+                <option value="D1">D1</option>
+                <option value="D2">D2</option>
+                <option value="D3">D3</option>
+                <option value="D4">D4</option>
+                <option value="D5">D5</option>
+            </select>
+        </div>
+        <div class="form-row file-row">
+            <label>轴图</label>
+            <label class="file-drop" id="fileDrop" for="imgInput"
+                   data-default-text="点击选择，或将轴图拖拽到此处"
+                   data-default-hint="支持 PNG / JPG / WEBP，单张 ≤ 5MB">
+                <input type="file" id="imgInput" name="image" accept="image/png,image/jpeg,image/webp" required hidden>
+                <span class="fd-icon">🖼️</span>
+                <span class="fd-text">点击选择，或将轴图拖拽到此处</span>
+                <span class="fd-hint">支持 PNG / JPG / WEBP，单张 ≤ 5MB</span>
+            </label>
+        </div>
+        <div class="file-name" id="fileName" hidden></div>
+        <div class="form-row">
+            <label>伤害(e)</label>
+            <input type="number" name="damage" step="0.1" min="0.1" placeholder="如 4.5" required>
+        </div>
+        <div class="form-row">
+            <label>简介</label>
+            <textarea name="summary" placeholder="可选"></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn">提交上传</button>
+            <span id="uploadMsg" class="upload-msg"></span>
+        </div>
+    </form>
+</div>
+
+<div class="toolbar">
+    <select id="fBoss">
+        <option value="">全部 BOSS</option>
+        <option value="D1">D1</option><option value="D2">D2</option>
+        <option value="D3">D3</option><option value="D4">D4</option>
+        <option value="D5">D5</option>
+    </select>
+    <input type="number" id="fMin" placeholder="伤害≥" step="0.1">
+    <input type="number" id="fMax" placeholder="伤害≤" step="0.1">
+    <select id="fSort">
+        <option value="boss_asc">按 BOSS 升序</option>
+        <option value="boss_desc">按 BOSS 降序</option>
+        <option value="dmg_desc">按伤害降序</option>
+        <option value="dmg_asc">按伤害升序</option>
+    </select>
+    <button type="button" class="btn secondary" id="fReset">重置</button>
+</div>
+
+<div id="axisGrid" class="axis-grid"></div>
+<div id="axisEmpty" class="empty" style="display:none;">暂无轴，快来上传第一条吧～</div>
+
+<div class="modal" id="detailModal" onclick="if(event.target===this)closeDetail()">
+    <div class="modal-close" onclick="closeDetail()">×</div>
+    <div class="detail-box" id="detailBox"
+         style="background:#fff;border-radius:10px;max-width:560px;width:92%;max-height:90vh;overflow:auto;padding:16px;"></div>
+</div>
+
+<!-- 管理员密码弹层（删除轴 / 删除评论前校验） -->
+<div class="modal" id="pwdModal" onclick="if(event.target===this)closePwd()">
+    <div class="modal-close" onclick="closePwd()">×</div>
+    <div class="pwd-box">
+        <h3 id="pwdTitle">管理员验证</h3>
+        <p class="pwd-hint">删除操作需要管理员密码</p>
+        <input type="password" id="pwdInput" placeholder="请输入管理员密码" autocomplete="off">
+        <div id="pwdMsg" class="pwd-msg"></div>
+        <div class="pwd-actions">
+            <button type="button" class="btn secondary" onclick="closePwd()">取消</button>
+            <button type="button" class="btn danger" onclick="confirmPwd()">确定删除</button>
+        </div>
+    </div>
+</div>
+
+<!-- 图片放大查看（详情轴图 / 评论图片点击触发） -->
+<div class="modal img-viewer" id="imgViewer" onclick="closeImgViewer()">
+    <div class="modal-close" onclick="closeImgViewer()">×</div>
+    <img id="imgViewerImg" src="" alt="放大查看">
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>var CURRENT_PERIOD = "{{ period }}";</script>
+<script src="{{ url_for('static', filename='js/axis.js') }}"></script>
+{% endblock %}

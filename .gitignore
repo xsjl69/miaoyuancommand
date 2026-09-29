@@ -1,0 +1,12 @@
+# 运行时生成
+data/
+uploads/
+__pycache__/
+*.pyc
+.venv/
+
+# 日志（运行时产生）
+*.log
+
+# 临时预览快照
+_preview_*.html

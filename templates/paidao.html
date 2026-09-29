@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}首日排刀 - {{ period_name }}{% endblock %}
+{% block content %}
+
+<h2 class="section-title">全表阵容统计汇总</h2>
+
+{% macro hl(text) %}{{ text|replace('紫罗兰','<span class="hl">紫罗兰</span>')|replace('白望','<span class="hl">白望</span>')|safe }}{% endmacro %}
+{% macro knife_cell(kid) %}{% if kid and kid in knife_by_id %}{{ kid }} {{ hl(knife_by_id[kid].description) }}{% else %}{{ kid or '' }}{% endif %}{% endmacro %}
+
+{% for zone in ['B','C','D'] %}
+<details class="zone zone-{{ zone }}" id="sec-{{ zone.lower() }}">
+    <summary>{{ zone }}区 — 共 {{ totals[zone] }} 刀</summary>
+    <table>
+        <thead>
+            <tr>
+                <th>刀型编号</th><th>刀数</th><th>阵容描述</th><th>视频</th><th>来源</th><th>轴图</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for k in knife_types if k.zone == zone %}
+            <tr>
+                <td>{{ k.id }}</td>
+                <td>{{ counts.get(k.id, 0) }}</td>
+                <td class="align-left">{{ hl(k.description) }}</td>
+                <td>{% if k.video_url %}<a href="{{ k.video_url }}" target="_blank">▶</a>{% else %}略{% endif %}</td>
+                <td>{% if k.video_source %}{{ k.video_source }}{% else %}略{% endif %}</td>
+                <td>{% if k.axis_image %}<span class="axis-icon" data-img="{{ k.axis_image }}">📷</span>{% else %}略{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endfor %}
+
+<div class="user-select-bar">
+    <label for="userSelect">快速跳转用户：</label>
+    <select id="userSelect" onchange="jumpToUser(this.value)">
+        <option value="">-- 选择用户 --</option>
+        {% for u in users %}<option value="user-{{ u.rank }}">{{ u.name }}</option>{% endfor %}
+    </select>
+</div>
+
+<h2 class="section-title" id="ranking">排刀表</h2>
+<table class="rank-table">
+    <thead>
+        <tr><th>排名</th><th>用户ID</th><th>骑士等级</th><th>第一刀</th><th>第二刀</th><th>第三刀</th></tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+        {% set knives = user_knives.get(u.rank, []) %}
+        <tr id="user-{{ u.rank }}" {% if u.bold %}style="font-weight:bold"{% endif %}>
+            <td rowspan="2">{{ u.rank }}</td>
+            <td rowspan="2">{% if u.bold %}<b>{{ u.name }}</b>{% else %}{{ u.name }}{% endif %}</td>
+            <td rowspan="2">{{ u.level }}</td>
+            <td>{{ knife_cell(knives[0].knife_type_id_first if knives|length > 0 else none) }}</td>
+            <td>{{ knife_cell(knives[1].knife_type_id_first if knives|length > 1 else none) }}</td>
+            <td>{{ knife_cell(knives[2].knife_type_id_first if knives|length > 2 else none) }}</td>
+        </tr>
+        <tr {% if u.bold %}style="font-weight:bold"{% endif %}>
+            <td>{{ knives[0].knife_type_id_last if knives|length > 0 else '' }}</td>
+            <td>{{ knives[1].knife_type_id_last if knives|length > 1 else '' }}</td>
+            <td>{{ knives[2].knife_type_id_last if knives|length > 2 else '' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="float-nav">
+    <button class="float-nav-toggle" id="navToggle">☰</button>
+    <div class="float-nav-panel" id="navPanel">
+        <a href="#sec-b"><span class="dot" style="background:var(--blue)"></span>B区 — {{ totals.B }}刀</a>
+        <a href="#sec-c"><span class="dot" style="background:var(--green)"></span>C区 — {{ totals.C }}刀</a>
+        <a href="#sec-d"><span class="dot" style="background:var(--red)"></span>D区 — {{ totals.D }}刀</a>
+        <a href="#ranking"><span class="dot" style="background:var(--orange)"></span>排刀表</a>
+    </div>
+</div>
+
+{% if tips %}
+<div class="tips-float"><button class="tips-btn" id="tipsBtn">!</button></div>
+<div class="tips-overlay" id="tipsOverlay">
+    <div class="tips-dialog">
+        <button class="tips-close" id="tipsClose">×</button>
+        <p>{{ tips }}</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal" id="imgModal">
+    <span class="modal-close" onclick="closeImgModal()">×</span>
+    <img id="imgModalImg" src="" alt="轴图">
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/paidao.js') }}"></script>
+{% endblock %}

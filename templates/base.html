@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}喵园指挥台{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="{{ url_for('index') }}">喵园指挥台</a>
+            <nav class="tabs">
+                <a href="{{ url_for('paidao') }}" class="{% if active=='paidao' %}active{% endif %}">首日排刀</a>
+                <a href="{{ url_for('axis_page') }}" class="{% if active=='axis' %}active{% endif %}">轴区</a>
+            </nav>
+            <form class="period-switch" method="get" action="">
+                <select name="period" aria-label="期数" onchange="this.form.submit()">
+                    {% for p in periods %}
+                    <option value="{{ p.id }}" {% if p.id==period %}selected{% endif %}>{{ p.id }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </header>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
