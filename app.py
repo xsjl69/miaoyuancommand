@@ -155,6 +155,39 @@ def paidao():
     )
 
 
+# --------------------------------------------------------------------------- #
+# 排刀：出刀完成标记
+# --------------------------------------------------------------------------- #
+DONE_FIELD_COLUMNS = {
+    "first": "knife_type_id_first_done",
+    "last": "knife_type_id_last_done",
+}
+
+
+@app.route("/api/user_knife/<int:uk_id>/done", methods=["POST"])
+def api_user_knife_done(uk_id):
+    """标记 / 取消某刀的"已完成"（上格 first、下格 last 各自独立）。"""
+    data = request.get_json(silent=True) or request.form
+    field = (data.get("field") or "").strip()
+    col = DONE_FIELD_COLUMNS.get(field)
+    if not col:
+        return jsonify({"error": "field 必须为 first 或 last"}), 400
+    database = db.get_db()
+    row = database.execute(
+        "SELECT id, %s AS cur FROM user_knife WHERE id=?" % col, (uk_id,)
+    ).fetchone()
+    if row is None:
+        return jsonify({"error": "记录不存在"}), 404
+    raw = data.get("done")
+    if raw is None:
+        new_val = 0 if row["cur"] else 1
+    else:
+        new_val = 1 if str(raw).strip().lower() in ("1", "true", "yes", "on") else 0
+    database.execute("UPDATE user_knife SET %s=? WHERE id=?" % col, (new_val, uk_id))
+    database.commit()
+    return jsonify({"ok": True, "field": field, "done": new_val})
+
+
 @app.route("/axis")
 def axis_page():
     period = get_period()

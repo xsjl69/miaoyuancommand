@@ -30,12 +30,14 @@ CREATE TABLE IF NOT EXISTS paidao_user (
 );
 
 CREATE TABLE IF NOT EXISTS user_knife (
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    period_id           TEXT,
-    user_rank           INTEGER,
-    slot                INTEGER,
-    knife_type_id_first TEXT,
-    knife_type_id_last  TEXT
+    id                       INTEGER PRIMARY KEY AUTOINCREMENT,
+    period_id                TEXT,
+    user_rank                INTEGER,
+    slot                     INTEGER,
+    knife_type_id_first      TEXT,
+    knife_type_id_last       TEXT,
+    knife_type_id_first_done INTEGER DEFAULT 0,
+    knife_type_id_last_done  INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS axis (
@@ -88,17 +90,27 @@ RENAMES = [
     ("user_knife", "position", "knife_type_id_last"),
 ]
 
+# 补列迁移：(表, 列名, 定义)
+ADD_COLUMNS = [
+    ("user_knife", "knife_type_id_first_done", "INTEGER DEFAULT 0"),
+    ("user_knife", "knife_type_id_last_done", "INTEGER DEFAULT 0"),
+]
+
 
 def _table_columns(conn, table):
     return [r[1] for r in conn.execute("PRAGMA table_info(%s)" % table)]
 
 
 def migrate(conn):
-    """幂等地把旧列名改为新列名（依赖 SQLite >= 3.25 的 RENAME COLUMN）。"""
+    """幂等迁移：先按 RENAMES 改名，再按 ADD_COLUMNS 补列。"""
     for table, old, new in RENAMES:
         cols = _table_columns(conn, table)
         if old in cols and new not in cols:
             conn.execute("ALTER TABLE %s RENAME COLUMN %s TO %s" % (table, old, new))
+    for table, col, decl in ADD_COLUMNS:
+        cols = _table_columns(conn, table)
+        if col not in cols:
+            conn.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, col, decl))
 
 
 def init_db():

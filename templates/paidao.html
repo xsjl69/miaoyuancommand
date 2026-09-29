@@ -6,6 +6,7 @@
 
 {% macro hl(text) %}{{ text|replace('紫罗兰','<span class="hl">紫罗兰</span>')|replace('白望','<span class="hl">白望</span>')|safe }}{% endmacro %}
 {% macro knife_cell(kid) %}{% if kid and kid in knife_by_id %}{{ kid }} {{ hl(knife_by_id[kid].description) }}{% else %}{{ kid or '' }}{% endif %}{% endmacro %}
+{% macro knife_td(k, field) %}{% if not k %}<td class="knife-cell is-empty"></td>{% elif field == 'first' %}<td class="knife-cell{% if k.knife_type_id_first_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="first" title="点击切换完成状态">{{ knife_cell(k.knife_type_id_first) }}</td>{% else %}<td class="knife-cell{% if k.knife_type_id_last_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="last" title="点击切换完成状态">{{ k.knife_type_id_last or '' }}</td>{% endif %}{% endmacro %}
 
 {% for zone in ['B','C','D'] %}
 <details class="zone zone-{{ zone }}" id="sec-{{ zone.lower() }}">
@@ -52,14 +53,14 @@
             <td rowspan="2">{{ u.rank }}</td>
             <td rowspan="2">{% if u.bold %}<b>{{ u.name }}</b>{% else %}{{ u.name }}{% endif %}</td>
             <td rowspan="2">{{ u.level }}</td>
-            <td>{{ knife_cell(knives[0].knife_type_id_first if knives|length > 0 else none) }}</td>
-            <td>{{ knife_cell(knives[1].knife_type_id_first if knives|length > 1 else none) }}</td>
-            <td>{{ knife_cell(knives[2].knife_type_id_first if knives|length > 2 else none) }}</td>
+            {{ knife_td(knives[0] if knives|length > 0 else none, 'first') }}
+            {{ knife_td(knives[1] if knives|length > 1 else none, 'first') }}
+            {{ knife_td(knives[2] if knives|length > 2 else none, 'first') }}
         </tr>
         <tr {% if u.bold %}style="font-weight:bold"{% endif %}>
-            <td>{{ knives[0].knife_type_id_last if knives|length > 0 else '' }}</td>
-            <td>{{ knives[1].knife_type_id_last if knives|length > 1 else '' }}</td>
-            <td>{{ knives[2].knife_type_id_last if knives|length > 2 else '' }}</td>
+            {{ knife_td(knives[0] if knives|length > 0 else none, 'last') }}
+            {{ knife_td(knives[1] if knives|length > 1 else none, 'last') }}
+            {{ knife_td(knives[2] if knives|length > 2 else none, 'last') }}
         </tr>
     {% endfor %}
     </tbody>
@@ -88,6 +89,18 @@
 <div class="modal" id="imgModal">
     <span class="modal-close" onclick="closeImgModal()">×</span>
     <img id="imgModalImg" src="" alt="轴图">
+</div>
+
+<!-- 出刀确认弹窗 -->
+<div class="modal" id="knifeConfirm" onclick="if(event.target===this)closeKnifeConfirm()">
+    <div class="confirm-box">
+        <h3 id="kcTitle">确认出刀</h3>
+        <p id="kcText">确认该刀已完成出刀？</p>
+        <div class="pwd-actions">
+            <button type="button" class="btn secondary" onclick="closeKnifeConfirm()">取消</button>
+            <button type="button" class="btn" id="kcOk">确认出刀</button>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
