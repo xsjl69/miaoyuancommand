@@ -21,5 +21,11 @@ SEED_FILE = os.path.join(BASE_DIR, "seed_data", "202609.js")
 # 管理员密码（删除轴 / 删除评论时校验；简单门槛，非完整鉴权）
 ADMIN_PASSWORD = "zdtxd1"
 
-# 默认期数
+# 默认期数（仅在 period 表为空时兜底；正常情况下取最新一期）
 DEFAULT_PERIOD = "202609"
+
+# 手工登记的期数（只建期数档案，不导入排刀数据）：(期数ID, 显示名)
+# 202609 由 seed.py 从 seed_data/202609.js 导入，后续新增的期登记在这里即可
+EXTRA_PERIODS = [
+    ("202610", "S92天蝎座202610喵园首日排刀表"),
+]

@@ -6,7 +6,7 @@ import json
 import os
 import sqlite3
 
-from config import SEED_FILE, DEFAULT_PERIOD
+from config import SEED_FILE, DEFAULT_PERIOD, EXTRA_PERIODS
 
 PERIOD_NAME = "S79天秤座202609喵园首日排刀表"
 
@@ -60,6 +60,18 @@ def seed_period(conn, period_id=DEFAULT_PERIOD, name=PERIOD_NAME):
                 "VALUES(?,?,?,?,?)",
                 (period_id, u["rank"], i, kid, pos),
             )
+    conn.commit()
+
+
+def ensure_periods(conn):
+    """登记 EXTRA_PERIODS 中的期数（幂等）。只建期数档案，不导入排刀/刀型数据。"""
+    cur = conn.cursor()
+    for pid, pname in EXTRA_PERIODS:
+        cur.execute(
+            'INSERT INTO period(id,name,tips,created_at) VALUES(?,?,?,datetime("now")) '
+            "ON CONFLICT(id) DO UPDATE SET name=excluded.name",
+            (pid, pname, ""),
+        )
     conn.commit()
 
 

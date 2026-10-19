@@ -33,6 +33,7 @@
 </details>
 {% endfor %}
 
+{% if users %}
 <div class="user-select-bar">
     <label for="userSelect">快速跳转用户：</label>
     <select id="userSelect" onchange="jumpToUser(this.value)">
@@ -40,8 +41,10 @@
         {% for u in users %}<option value="user-{{ u.rank }}">{{ u.name }}</option>{% endfor %}
     </select>
 </div>
+{% endif %}
 
 <h2 class="section-title" id="ranking">排刀表</h2>
+{% if users %}
 <table class="rank-table">
     <thead>
         <tr><th>排名</th><th>用户ID</th><th>骑士等级</th><th>第一刀</th><th>第二刀</th><th>第三刀</th></tr>
@@ -65,6 +68,9 @@
     {% endfor %}
     </tbody>
 </table>
+{% else %}
+<div class="empty">本期暂无排刀数据</div>
+{% endif %}
 
 <div class="float-nav">
     <button class="float-nav-toggle" id="navToggle">☰</button>

@@ -47,6 +47,7 @@ with app.app_context():
     conn = sqlite3.connect(config.DATABASE)
     conn.row_factory = sqlite3.Row
     seed.seed_if_empty(conn)
+    seed.ensure_periods(conn)
     conn.close()
 
 
