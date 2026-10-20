@@ -365,6 +365,7 @@ td.align-left { text-align: left; }
 }
 .confirm-box h3 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
 .confirm-box p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.kc-knife { font-weight: 700; color: var(--text); margin-bottom: 2px; word-break: break-all; }
 
 /* ===== 移动端适配 ===== */
 @media screen and (max-width: 768px) {

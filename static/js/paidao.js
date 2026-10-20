@@ -30,6 +30,17 @@ function onKnifeCellClick(cell) {
     var done = cell.classList.contains('done');
     _knifeTarget = { cell: cell, uk: uk, field: field, next: done ? 0 : 1 };
     document.getElementById('kcTitle').textContent = done ? '取消完成标记' : '确认出刀';
+    /* 弹框展示当前刀的刀型 id 与描述（取自单元格文本：首段为 id，其余为描述） */
+    var kcKnife = document.getElementById('kcKnife');
+    var txt = cell.textContent.trim();
+    if (!txt) {
+        kcKnife.textContent = '（空刀位）';
+    } else if (txt === 'D') {
+        kcKnife.textContent = 'D · D面自选';
+    } else {
+        var i = txt.indexOf(' ');
+        kcKnife.textContent = i > 0 ? txt.slice(0, i) + ' · ' + txt.slice(i + 1) : txt;
+    }
     document.getElementById('kcText').textContent = done
         ? '取消该刀的已完成标记？'
         : '确认该刀已完成出刀？确认后该格显示为灰色。';
