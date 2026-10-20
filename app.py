@@ -33,6 +33,8 @@ app = Flask(__name__)
 app.config["DATABASE"] = config.DATABASE
 app.config["UPLOAD_FOLDER"] = config.UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
+# 静态文件（css/js）不缓存：小内网应用，改动即时生效；304 协商代价可忽略
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 # 模板改动后自动重载（debug=False 时 Flask 默认缓存模板，改模板不重启不生效）
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 

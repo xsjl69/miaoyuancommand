@@ -175,6 +175,8 @@ td.align-left { text-align: left; }
 .modal.active { display: flex; align-items: center; justify-content: center; animation: fade .15s ease; }
 .modal img { max-width: 94vw; max-height: 92vh; border-radius: var(--radius-sm); box-shadow: var(--shadow-md); }
 .modal-close { position: absolute; top: 18px; right: 26px; color: #fff; font-size: 36px; cursor: pointer; line-height: 1; }
+/* 详情/密码弹层是白色面板，白叉叠在白底上不可见 → 改黑色 */
+#detailModal .modal-close, #pwdModal .modal-close { color: #000; }
 
 /* ===== 轴区：工具栏 / 按钮 ===== */
 .btn {
