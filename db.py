@@ -11,13 +11,14 @@ CREATE TABLE IF NOT EXISTS period (
 );
 
 CREATE TABLE IF NOT EXISTS knife_type (
-    id          TEXT PRIMARY KEY,
+    id          TEXT,
     period_id   TEXT,
     zone        TEXT,
     description TEXT,
     video_url   TEXT,
     video_source TEXT,
-    axis_image  TEXT
+    axis_image  TEXT,
+    PRIMARY KEY (period_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS paidao_user (
@@ -94,6 +95,7 @@ RENAMES = [
 ADD_COLUMNS = [
     ("user_knife", "knife_type_id_first_done", "INTEGER DEFAULT 0"),
     ("user_knife", "knife_type_id_last_done", "INTEGER DEFAULT 0"),
+    ("knife_type", "borrow", "TEXT"),
 ]
 
 

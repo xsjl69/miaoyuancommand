@@ -124,15 +124,18 @@ def paidao():
     ).fetchall()
     knife_by_id = {k["id"]: k for k in kt}
 
-    # 统计每个刀型被使用次数（用于汇总刀数）
+    # 统计每个刀型被使用次数（主刀 + 尾刀格数分别计，与 202609「刀数=格数」口径一致；
+    # 尾刀占位 'D' 不在 knife_by_id 中，自动跳过）
     counts = {}
     user_knives = {}
     for uk in database.execute(
         "SELECT * FROM user_knife WHERE period_id=? ORDER BY user_rank, slot", (period,)
     ):
         user_knives.setdefault(uk["user_rank"], []).append(uk)
-        if uk["knife_type_id_first"]:
+        if uk["knife_type_id_first"] in knife_by_id:
             counts[uk["knife_type_id_first"]] = counts.get(uk["knife_type_id_first"], 0) + 1
+        if uk["knife_type_id_last"] in knife_by_id:
+            counts[uk["knife_type_id_last"]] = counts.get(uk["knife_type_id_last"], 0) + 1
 
     totals = {"B": 0, "C": 0, "D": 0}
     for k in kt:

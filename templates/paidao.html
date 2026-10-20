@@ -4,9 +4,9 @@
 
 <h2 class="section-title">全表阵容统计汇总</h2>
 
-{% macro hl(text) %}{{ text|replace('紫罗兰','<span class="hl">紫罗兰</span>')|replace('白望','<span class="hl">白望</span>')|safe }}{% endmacro %}
-{% macro knife_cell(kid) %}{% if kid and kid in knife_by_id %}{{ kid }} {{ hl(knife_by_id[kid].description) }}{% else %}{{ kid or '' }}{% endif %}{% endmacro %}
-{% macro knife_td(k, field) %}{% if not k %}<td class="knife-cell is-empty"></td>{% elif field == 'first' %}<td class="knife-cell{% if k.knife_type_id_first_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="first" title="点击切换完成状态">{{ knife_cell(k.knife_type_id_first) }}</td>{% else %}<td class="knife-cell{% if k.knife_type_id_last_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="last" title="点击切换完成状态">{{ k.knife_type_id_last or '' }}</td>{% endif %}{% endmacro %}
+{% macro hl(text, extra='') %}{% set words = ['紫罗兰', '白望'] + (extra.split(',') if extra else []) %}{% set ns = namespace(out=text) %}{% for w in words %}{% set ns.out = ns.out|replace(w, '<span class="hl">' ~ w ~ '</span>') %}{% endfor %}{{ ns.out|safe }}{% endmacro %}
+{% macro knife_cell(kid) %}{% if kid and kid in knife_by_id %}{{ kid }} {{ hl(knife_by_id[kid].description, knife_by_id[kid].borrow or '') }}{% else %}{{ kid or '' }}{% endif %}{% endmacro %}
+{% macro knife_td(k, field) %}{% if not k %}<td class="knife-cell is-empty"></td>{% elif field == 'first' %}<td class="knife-cell{% if k.knife_type_id_first_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="first" title="点击切换完成状态">{{ knife_cell(k.knife_type_id_first) }}</td>{% else %}<td class="knife-cell{% if k.knife_type_id_last_done %} done{% endif %}" data-uk="{{ k.id }}" data-field="last" title="点击切换完成状态">{{ knife_cell(k.knife_type_id_last) }}</td>{% endif %}{% endmacro %}
 
 {% for zone in ['B','C','D'] %}
 <details class="zone zone-{{ zone }}" id="sec-{{ zone.lower() }}">
@@ -22,7 +22,7 @@
             <tr>
                 <td>{{ k.id }}</td>
                 <td>{{ counts.get(k.id, 0) }}</td>
-                <td class="align-left">{{ hl(k.description) }}</td>
+                <td class="align-left">{{ hl(k.description, k.borrow or '') }}</td>
                 <td>{% if k.video_url %}<a href="{{ k.video_url }}" target="_blank">▶</a>{% else %}略{% endif %}</td>
                 <td>{% if k.video_source %}{{ k.video_source }}{% else %}略{% endif %}</td>
                 <td>{% if k.axis_image %}<span class="axis-icon" data-img="{{ k.axis_image }}">📷</span>{% else %}略{% endif %}</td>
