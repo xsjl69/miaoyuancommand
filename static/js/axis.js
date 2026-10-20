@@ -55,8 +55,10 @@ function renderAxes(list) {
         var card = document.createElement('div');
         card.className = 'axis-card';
         card.dataset.id = a.id;
+        /* 列表用缩略图（无则回退原图），详情/放大查看仍走原图 */
+        var src = a.image_thumb || a.image;
         var img = a.image
-            ? '<img src="' + a.image + '" alt="轴图" loading="lazy">'
+            ? '<img src="' + src + '" alt="轴图" loading="lazy" decoding="async">'
             : '<div style="height:120px;background:#eee;"></div>';
         card.innerHTML = img +
             '<div class="meta"><span class="boss">' + a.boss + '</span>' +

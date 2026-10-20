@@ -20,7 +20,10 @@ def detect_image_ext(data: bytes):
 
 
 def save_image(stream) -> str | None:
-    """读取上传流，校验后落盘为随机名文件。成功返回文件名，失败返回 None。"""
+    """读取上传流，校验后落盘为随机名文件。成功返回文件名，失败返回 None。
+
+    落盘成功后同步生成缩略图（best-effort，失败不影响上传本身）。
+    """
     data = stream.read()
     if not data:
         return None
@@ -33,7 +36,46 @@ def save_image(stream) -> str | None:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     with open(os.path.join(UPLOAD_FOLDER, filename), "wb") as f:
         f.write(data)
+    make_thumbnail(os.path.join(UPLOAD_FOLDER, filename))
     return filename
+
+
+THUMB_SUFFIX = "_thumb.webp"
+THUMB_MAX_EDGE = 640  # 列表卡片最高 130px，640px 足够 2x 屏清晰
+
+
+def thumb_name(filename: str) -> str:
+    """由原图文件名得到缩略图文件名（同目录，固定 _thumb.webp 后缀）。"""
+    stem, _ = os.path.splitext(filename)
+    return stem + THUMB_SUFFIX
+
+
+def make_thumbnail(path: str):
+    """为已落盘图片生成 WEBP 缩略图（最长边 ≤ THUMB_MAX_EDGE）。
+
+    best-effort：Pillow 缺失或图片损坏时静默跳过，绝不影响上传主流程。
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    thumb = thumb_name(os.path.basename(path))
+    thumb_path = os.path.join(os.path.dirname(path), thumb)
+    if os.path.exists(thumb_path):
+        return thumb
+    try:
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            im.thumbnail((THUMB_MAX_EDGE, THUMB_MAX_EDGE))
+            im.save(thumb_path, "WEBP", quality=78, method=4)
+        return thumb
+    except Exception:
+        try:
+            if os.path.exists(thumb_path):
+                os.remove(thumb_path)  # 半写坏文件不留垃圾
+        except OSError:
+            pass
+        return None
 
 
 def is_safe_stored_filename(name: str) -> bool:

@@ -27,7 +27,7 @@ from flask import (
 import config
 import db
 import seed
-from security import is_safe_stored_filename, save_image
+from security import is_safe_stored_filename, save_image, thumb_name
 
 app = Flask(__name__)
 app.config["DATABASE"] = config.DATABASE
@@ -90,7 +90,7 @@ def _admin_ok():
 
 
 def _remove_upload(stored_name):
-    """删除 uploads 目录下的一个已存图片（best-effort，失败忽略）。"""
+    """删除 uploads 目录下的一个已存图片及其缩略图（best-effort，失败忽略）。"""
     if not stored_name or not is_safe_stored_filename(stored_name):
         return
     path = os.path.join(current_app.config["UPLOAD_FOLDER"], stored_name)
@@ -99,6 +99,22 @@ def _remove_upload(stored_name):
             os.remove(path)
     except OSError:
         pass
+    thumb = os.path.join(current_app.config["UPLOAD_FOLDER"], thumb_name(stored_name))
+    try:
+        if os.path.isfile(thumb):
+            os.remove(thumb)
+    except OSError:
+        pass
+
+
+def _thumb_url(stored_name):
+    """缩略图 URL（仅当缩略图文件已存在时返回，否则 None → 前端回退原图）。"""
+    if not stored_name or not is_safe_stored_filename(stored_name):
+        return None
+    path = os.path.join(current_app.config["UPLOAD_FOLDER"], thumb_name(stored_name))
+    if os.path.isfile(path):
+        return url_for("uploaded_file", filename=thumb_name(stored_name))
+    return None
 
 
 # --------------------------------------------------------------------------- #
@@ -237,6 +253,7 @@ def api_axis_list():
             "damage": r["damage"],
             "summary": r["summary"] or "",
             "image": url_for("uploaded_file", filename=r["image_path"]) if r["image_path"] else "",
+            "image_thumb": _thumb_url(r["image_path"]) or "",
         }
         for r in rows
     ]
@@ -315,6 +332,7 @@ def api_axis_detail(axis_id):
                 "damage": ax["damage"],
                 "summary": ax["summary"] or "",
                 "image": url_for("uploaded_file", filename=ax["image_path"]) if ax["image_path"] else "",
+                "image_thumb": _thumb_url(ax["image_path"]) or "",
                 "created_at": ax["created_at"],
             },
             "comments": comments,
